@@ -1,0 +1,56 @@
+<ul th:if="${showSearch}" class="navbar-nav align-items-center d-none d-lg-block">
+   <li class="nav-item">
+      <div class="search-box">
+         <form class="position-relative" data-bs-toggle="search" data-bs-display="static">
+            <input id="searchBox" class="form-control search-input fuzzy-search" type="search" placeholder="Procurar..." aria-label="Procurar" />
+            <span class="fas fa-search search-box-icon"></span>
+         </form>
+      </div>
+   </li>
+</ul>
+<ul class="navbar-nav navbar-nav-icons ms-auto flex-row align-items-center">
+   <li class="nav-item ">
+      <a class="nav-link pe-0" data-bs-toggle="tooltip" data-bs-original-title="Comprar" title="" href="maintrade">
+      <span class="fas fa-hand-holding-usd" data-fa-transform="shrink-7" style="font-size: 33px;"></span>
+      </a>
+   </li>
+   <!-- USUARIO -->
+   <li th:if="${userName}" class="nav-item dropdown">
+      <a class="nav-link pe-0" id="navbarDropdownUser" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="far fa-user" data-fa-transform="shrink-7" style="font-size: 33px;"></span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="navbarDropdownUser">
+         <div class="card card-notification shadow-none">
+            <div class="scrollbar-overlay os-host os-theme-dark os-host-resize-disabled os-host-scrollbar-horizontal-hidden os-host-transition os-host-overflow os-host-overflow-y">
+               <div class="list-group list-group-flush fw-normal fs--1">
+                  <div class="list-group-item">
+                     <a class="border-bottom-0 notification notification-flush" href="#">
+                        <div class="notification-body">
+                     <a th:text="${userName}" class="dropdown-item fw-bold" href="#"></a>
+                     <div class="dropdown-divider"></div>
+                     <a class="dropdown-item text-warning"  href="dashboard">Painel de Controle</a>
+                     </div>
+                     </a>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </li>
+   <!--  FIM DO USUARIO  -->
+   <li th:if="${userName} != null " class="nav-item ">
+      <a class="nav-link pe-0" data-bs-toggle="tooltip" data-bs-original-title="Trade" title="" href="tradingswap">
+      <span class="far fa-chart-bar" data-fa-transform="shrink-7" style="font-size: 33px;"></span>
+      </a>
+   </li>
+   <li th:if="${userName} != null " class="nav-item ">
+      <a class="nav-link pe-0" data-bs-toggle="tooltip" data-bs-original-title="Logout" title="" href="logout">
+      <span class="fas fa-power-off" data-fa-transform="shrink-7" style="font-size: 33px;"></span>
+      </a>
+   </li>
+   <li th:if="${userName} == null " class="nav-item ">
+      <a class="nav-link pe-0" data-bs-toggle="tooltip" data-bs-original-title="Login" title="" href="loginform">
+      <span class="fas fa-power-off" data-fa-transform="shrink-7" style="font-size: 33px;"></span>
+      </a>
+   </li>
+</ul>

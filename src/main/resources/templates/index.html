@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:include="head"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+  <div class="content-wrapper" style="margin-left: 0px;">
+
+
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Wallet Generator</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item"><a href="#">B</a></li>
+              <li class="breadcrumb-item active">C</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+    
+    <section class="content pb-3">
+      <div class="container-fluid">
+      
+               
+               <div class="row">
+                  <div class="col-lg-5 pe-lg-2 mb-3 ">
+                     <div class="card h-100">
+                        <div class="card-header d-flex flex-between-center bg-light py-2">
+                           <h6 class="mb-0">Mapa Principal</h6>
+                        </div>
+                        <div class="card-body d-flex flex-center flex-column" style="position:relative;height:469px">
+                        	&nbsp;
+                        </div>
+                     </div>
+                  </div>
+                  
+                  <div class="col-lg-5 ps-lg-2 mb-3">
+                     <div class="card h-100">
+                        <div class="card-header d-flex flex-between-center bg-light py-2">
+                           <h6 class="mb-0">Janela</h6>
+                        </div>
+                        <div class="card-body d-flex flex-center flex-column" style="position:relative">
+                        	&nbsp;
+                        </div>
+                     </div>
+                  </div>
+                  
+                 <div class="col-lg-2 ps-lg-2 mb-3">
+                     <div class="card h-100">
+                        <div class="card-body py-0" style="height: 150px; overflow: overlay; font-family: monospace;">
+                           <table class="table table-sm fs--1 mb-0 overflow-hidden">
+                              <thead class="text-900" >
+                                 <tr>
+                                    <th >Nome</th>
+                                    <th >Tipo</th>
+                                    <th style="width:30px" >&nbsp;</th>
+                                 </tr>
+                              </thead>
+                              <tbody class="list" id="cameras-tbl"></tbody>
+                           </table>
+                        </div>
+                        
+                        <div class="card-body py-0" style="height: 150px; overflow: overlay; font-family: monospace;">
+                        	---
+                        </div>
+  
+                     </div>
+                 
+                 </div>
+
+                  
+               </div>
+
+               <div class="row">
+                  <div class="col-lg-12">
+                     <div class="card h-100">
+                        <div class="card-body py-0" style="height: 300px; overflow: overlay; font-family: monospace;">
+                           <table class="table table-sm fs--1 mb-0 overflow-hidden">
+                              <thead class="text-900" >
+                                 <tr>
+                                    <th >Nome</th>
+                                    <th >MMSI</th>
+                                    <th >Tipo</th>
+                                    <th >Lat</th>
+                                    <th >Lon</th>
+                                    <th >Rumo</th>
+                                    <th >Ind.</th>
+                                    <th >Atual.</th>
+                                 </tr>
+                              </thead>
+                              <tbody class="list" id="table-vessels"></tbody>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+      </div>
+    </section>
+
+  </div>
+
+
+  <footer class="main-footer" style="margin-left: 0px;">
+    <div class="float-right d-none d-sm-block">
+      <b>Version</b> 1.0.0
+    </div>
+    <strong>Carlos Magno Abreu</strong> | magno.mabreu@gmail.com
+  </footer>
+
+</div>
+  	  <script src="websocket/sockjs.min.js"></script>
+	  <script src="websocket/stomp.min.js"></script>
+	  <script src="script.js"></script>	  
+</body>
+</html>
