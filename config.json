@@ -26,6 +26,6 @@
 			"name" : "AVAX Avalanche",
 			"apiAddress" : "https://api.avax.network/ext/bc/C/rpc",
 			"active" : true
-		},
+		}
 	]
 }
