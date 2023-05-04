@@ -52,6 +52,7 @@ public class BruteWorker implements Runnable {
 				cWallet.setNetwork( netName );
 				writeWallet( cWallet );
 				this.bs.sendWallet(cWallet);
+				this.stats.put(netName, this.stats.get( netName ) + 1);
 				found++;
 			}
 			success++;
@@ -106,6 +107,10 @@ public class BruteWorker implements Runnable {
 
 	public int getSuccess() {
 		return success;
+	}
+	
+	public synchronized  Map<String, Integer> getStats(){
+		return this.stats;
 	}
 	
 	@Override
