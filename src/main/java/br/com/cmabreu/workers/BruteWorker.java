@@ -22,16 +22,23 @@ import org.web3j.utils.Convert;
 import org.web3j.utils.Convert.Unit;
 
 import br.com.cmabreu.model.Wallet;
+import br.com.cmabreu.service.BruteService;
 
 public class BruteWorker implements Runnable {
 	private List<String> words;
 	private Map<String, Web3j> networks;
+	private Map<String, Integer> stats;
 	private int quant = 0;
+	private int success = 0;
+	private int errors = 0;
+	private int found = 0;
 	private JSONObject config;
+	private BruteService bs;
 	
-	public BruteWorker(List<String> words, JSONObject config) {
-		this.words = words;
-		this.config = config;
+	public BruteWorker( BruteService bs) {
+		this.words = bs.getWords();
+		this.config = bs.getConfig();
+		this.bs = bs;
 	}
 	
 	private synchronized BigDecimal balanceEth(Wallet cWallet, String netName, Web3j network, String address) {
@@ -44,10 +51,13 @@ public class BruteWorker implements Runnable {
 				cWallet.setBalance(balance);
 				cWallet.setNetwork( netName );
 				writeWallet( cWallet );
+				this.bs.sendWallet(cWallet);
+				found++;
 			}
-			
+			success++;
 			return res;
 		} catch ( Exception e ) {
+			errors++;
 			return new BigDecimal(0);
 		}
 	}
@@ -82,15 +92,26 @@ public class BruteWorker implements Runnable {
 		return result.toString().trim();
 	}
 	
+	public int getFound() {
+		return found;
+	}
+	
 	public int getQuant() {
-		int temp = quant;
-		quant = 0;
-		return temp;
+		return quant;
+	}
+	
+	public int getErrors() {
+		return errors;
+	}
+
+	public int getSuccess() {
+		return success;
 	}
 	
 	@Override
 	public void run() {
 		this.networks = new HashMap<String, Web3j>();
+		this.stats = new HashMap<String, Integer>();
 		JSONArray nets = this.config.getJSONArray("networks");
 		for ( int x=0; x < nets.length(); x++ ) {
 			JSONObject net = nets.getJSONObject(x);
@@ -98,10 +119,10 @@ public class BruteWorker implements Runnable {
 				String netName = net.getString("name");
 				String netAddress = net.getString("apiAddress");
 				System.out.println("  > " + netName + " - " + netAddress );
-				this.networks.put( netName, Web3j.build(new HttpService( netAddress ) )  );		
+				this.networks.put( netName, Web3j.build(new HttpService( netAddress ) )  );
+				this.stats.put(netName, 0);
 			}
 		}
-		
 		while( true ) {
 			try {
 				createWallet( "password" );

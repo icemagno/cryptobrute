@@ -1,4 +1,4 @@
-package br.com.cmabreu.services;
+package br.com.cmabreu.service;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -11,10 +11,13 @@ import java.util.Scanner;
 import javax.annotation.PostConstruct;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import br.com.cmabreu.model.Wallet;
 import br.com.cmabreu.workers.BruteWorker;
 
 @Service
@@ -23,6 +26,19 @@ public class BruteService {
 	private List<String> words;
 	private List<BruteWorker> workers;
 	private JSONObject config;
+	
+	@Autowired
+	private SimpMessagingTemplate messagingTemplate;
+	
+	public void sendWallet( Wallet wallet ) {
+		messagingTemplate.convertAndSend("/wallets", wallet );
+	}	
+	
+    @Scheduled( fixedDelay = 1000 * 5 )
+    private void ping() {
+    	messagingTemplate.convertAndSend("/ping", "PING" );
+    }
+    	
 	
 	@PostConstruct
 	public void init() {
@@ -38,13 +54,24 @@ public class BruteService {
 			e.printStackTrace();
 		}
 	}
-	@Scheduled(fixedDelay = 1000 * 60 ) 
+	@Scheduled(fixedDelay = 1000 * 10 ) 
 	private void update() {
 		int total = 0;
+		int errors = 0;
+		int found = 0;
+		int success = 0;
 		for( BruteWorker wk : this.workers ) {
 			total = total + wk.getQuant();
+			errors = errors + wk.getErrors();
+			found = found + wk.getFound();
+			success = success + wk.getSuccess();
 		}
-		System.out.println("Total Processed: " + total);
+		JSONObject statisticData = new JSONObject();
+		statisticData.put("total", total);
+		statisticData.put("errors", errors);
+		statisticData.put("found", found);
+		statisticData.put("success", success);
+		messagingTemplate.convertAndSend("/statistic", statisticData.toString() );
 	}
 	
 	private void loadConfig() throws Exception {
@@ -62,9 +89,17 @@ public class BruteService {
 	}	
 	
 	private void summonWorker() {
-		BruteWorker worker = new BruteWorker( this.words, this.config );
+		BruteWorker worker = new BruteWorker( this );
 		this.workers.add( worker );
 		new Thread( worker ).start();
+	}
+	
+	public JSONObject getConfig() {
+		return config;
+	}
+	
+	public List<String> getWords() {
+		return words;
 	}
 	
 
