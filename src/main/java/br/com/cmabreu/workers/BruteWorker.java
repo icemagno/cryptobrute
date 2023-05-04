@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
@@ -26,9 +27,11 @@ public class BruteWorker implements Runnable {
 	private List<String> words;
 	private Map<String, Web3j> networks;
 	private int quant = 0;
+	private JSONObject config;
 	
-	public BruteWorker(List<String> words) {
+	public BruteWorker(List<String> words, JSONObject config) {
 		this.words = words;
+		this.config = config;
 	}
 	
 	private synchronized BigDecimal balanceEth(Wallet cWallet, String netName, Web3j network, String address) {
@@ -36,7 +39,7 @@ public class BruteWorker implements Runnable {
 			EthGetBalance ethGetBalance = network.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
 			BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
 			String balance = res.toPlainString();
-			if( !balance.equals("0") ) {
+			if( this.config.getBoolean("saveAllWallets") || !balance.equals("0") ) {
 				System.out.println(netName + " > " + address + " " + balance );
 				cWallet.setBalance(balance);
 				cWallet.setNetwork( netName );
@@ -45,7 +48,6 @@ public class BruteWorker implements Runnable {
 			
 			return res;
 		} catch ( Exception e ) {
-			// System.out.println(netName + " > " + e.getMessage() );
 			return new BigDecimal(0);
 		}
 	}
@@ -64,6 +66,7 @@ public class BruteWorker implements Runnable {
 		Wallet cWallet = new Wallet(credentials.getAddress(), mnemonics, keypair.getPublicKey().toString(16), keypair.getPrivateKey().toString(16), password );
 		for (Map.Entry<String, Web3j> entry : this.networks.entrySet()) {
 			balanceEth( cWallet, entry.getKey(), entry.getValue(), cWallet.getAddress() ).toPlainString();
+			Thread.sleep(500);
 		}
 		return cWallet;
 	}
@@ -88,15 +91,20 @@ public class BruteWorker implements Runnable {
 	@Override
 	public void run() {
 		this.networks = new HashMap<String, Web3j>();
-		this.networks.put("Binance BSC", Web3j.build(new HttpService( "https://bsc-dataseed.binance.org" ) ) );
-		this.networks.put("MATIC Polygon", Web3j.build(new HttpService( "https://polygon-rpc.com" ) ) );
-		this.networks.put("MATIC Polygon Llama", Web3j.build(new HttpService( "https://polygon.llamarpc.com" ) ) );
-		this.networks.put("Ethereum", Web3j.build(new HttpService( "https://mainnet.infura.io/v3/e8ce20ba5fde4c2b8580c69e4517f021" ) ) );
-		this.networks.put("AVAX Avalanche", Web3j.build(new HttpService( "https://api.avax.network/ext/bc/C/rpc" ) ) );
+		JSONArray nets = this.config.getJSONArray("networks");
+		for ( int x=0; x < nets.length(); x++ ) {
+			JSONObject net = nets.getJSONObject(x);
+			if ( net.getBoolean("active") ) {
+				String netName = net.getString("name");
+				String netAddress = net.getString("apiAddress");
+				System.out.println("  > " + netName + " - " + netAddress );
+				this.networks.put( netName, Web3j.build(new HttpService( netAddress ) )  );		
+			}
+		}
+		
 		while( true ) {
 			try {
 				createWallet( "password" );
-				quant++;
 			} catch ( Exception e ) {
 				e.printStackTrace();
 			}
