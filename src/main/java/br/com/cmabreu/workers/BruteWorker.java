@@ -1,6 +1,7 @@
 package br.com.cmabreu.workers;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -45,7 +46,6 @@ public class BruteWorker implements Runnable {
 	}
 	
 	private synchronized BigDecimal balanceEth(Wallet cWallet, String netName, Web3j network, String address) {
-		this.quant++;
 		try {
 			EthGetBalance ethGetBalance = network.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
 			BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
@@ -59,11 +59,8 @@ public class BruteWorker implements Runnable {
 				this.stats.put(netName, this.stats.get( netName ) + 1);
 				found++;
 				dumpWallets( address );
-				this.working = false;
 			}
 			success++;
-			this.lastWallets.add( cWallet );
-			if( this.lastWallets.size() > 10 ) this.lastWallets.remove(0);
 			return res;
 		} catch ( Exception e ) {
 			errors++;
@@ -72,19 +69,25 @@ public class BruteWorker implements Runnable {
 	}
 
 	private void dumpWallets( String address ) throws Exception {
+		new File("/brute/wallets/" + address ).mkdirs();
 		System.out.println("Dumping all previous wallets because found balance on " + address );
 		for( Wallet w : this.lastWallets ) {
 			System.out.println("   > " + w.getAddress() );
-			writeWallet(w);
+			writeWallet(w, "/brute/wallets/" + address );
 		}
 		
 	}
 
-	public void writeWallet( Wallet wallet ) throws IOException {
+	public void writeWallet( Wallet wallet, String folder ) throws IOException {
 		JSONObject jo = new JSONObject( wallet );
-		BufferedWriter writer = new BufferedWriter(new FileWriter("/brute/wallets/" + wallet.getAddress() + ".txt" )  );
+		BufferedWriter writer = new BufferedWriter(new FileWriter( folder + "/" + wallet.getAddress() + ".txt" )  );
 		writer.write( jo.toString() );
 		writer.close();
+	}	
+	
+	
+	public void writeWallet( Wallet wallet ) throws IOException {
+		writeWallet( wallet, "/brute/wallets");
 	}	
 	
 	public Map<String, Web3j> getNetworks() {
@@ -92,14 +95,16 @@ public class BruteWorker implements Runnable {
 	}
 	
 	public Wallet createWallet( String password ) throws Exception {
+		this.quant++;
 		String mnemonics = this.getMnemonics();
 		Credentials credentials = WalletUtils.loadBip39Credentials( password, mnemonics );	
 		ECKeyPair keypair = credentials.getEcKeyPair();
 		Wallet cWallet = new Wallet(credentials.getAddress(), mnemonics, keypair.getPublicKey().toString(16), keypair.getPrivateKey().toString(16), password );
 		for (Map.Entry<String, Web3j> entry : this.networks.entrySet()) {
 			balanceEth( cWallet, entry.getKey(), entry.getValue(), cWallet.getAddress() ).toPlainString();
-			Thread.sleep(500);
 		}
+		this.lastWallets.add( cWallet );
+		if( this.lastWallets.size() > 10 ) this.lastWallets.remove(0);		
 		return cWallet;
 	}
 	
@@ -151,6 +156,7 @@ public class BruteWorker implements Runnable {
 		while( this.working ) {
 			try {
 				createWallet( "password" );
+				Thread.sleep(500);
 			} catch ( Exception e ) {
 				e.printStackTrace();
 			}

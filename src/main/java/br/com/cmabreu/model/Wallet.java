@@ -1,5 +1,8 @@
 package br.com.cmabreu.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Wallet {
 	private String address;
 	private String mnemonic;
@@ -8,7 +11,7 @@ public class Wallet {
 	private String balance;
 	private String network;
 	private String password;
-	private String dumpText;
+	private List<String> dumpText = new ArrayList<String>();
 	
 	public Wallet(String address, String mnemonic, String pubk, String privk, String password ) {
 		this.address = address;
@@ -21,10 +24,10 @@ public class Wallet {
 	}
 	
 	public void setDumpText(String dumpText) {
-		this.dumpText = dumpText;
+		this.dumpText.add( dumpText );
 	}
 	
-	public String getDumpText() {
+	public List<String> getDumpText() {
 		return dumpText;
 	}
 	

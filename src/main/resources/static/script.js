@@ -41,6 +41,9 @@ async function  verifyWallet( wallet, network ){
 }
 
 function addWallet( payload ){
+	
+	console.log( payload );
+	
 	if( $( "#wallets tr").length > 10 )	$('#wallets tr:first').remove();
 	let el = "<tr>" +
 	"<td>"+ payload.address +"</td>" +
