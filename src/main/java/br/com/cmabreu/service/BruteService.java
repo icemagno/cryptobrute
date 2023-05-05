@@ -19,7 +19,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.web3j.protocol.Web3j;
 
 import br.com.cmabreu.model.Wallet;
 import br.com.cmabreu.workers.BruteWorker;
@@ -35,7 +34,7 @@ public class BruteService {
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
 	
-	public void sendWallet( Wallet wallet ) {
+	public synchronized void sendWallet( Wallet wallet ) {
 		messagingTemplate.convertAndSend("/wallets", wallet );
 	}	
 	
@@ -66,18 +65,16 @@ public class BruteService {
 		int errors = 0;
 		int found = 0;
 		int success = 0;
-		JSONArray stats = new JSONArray();
+		JSONObject statistics = new JSONObject();
 		for( BruteWorker wk : this.workers ) {
 			total = total + wk.getQuant();
 			errors = errors + wk.getErrors();
 			found = found + wk.getFound();
 			success = success + wk.getSuccess();
 			for (Map.Entry<String, Integer> entry : wk.getStats().entrySet()) {
-				JSONObject stat = new JSONObject();
 				int totalPartial = this.stats.get( entry.getKey() );
 				this.stats.put( entry.getKey(), totalPartial + entry.getValue() ) ;
-				stat.put(entry.getKey(), this.stats.get( entry.getKey() ) );
-				stats.put( stat );
+				statistics.put( entry.getKey(), this.stats.get( entry.getKey() ) );
 			}
 		}
 		JSONObject statisticData = new JSONObject();
@@ -85,7 +82,7 @@ public class BruteService {
 		statisticData.put("errors", errors);
 		statisticData.put("found", found);
 		statisticData.put("success", success);
-		statisticData.put("statistic", stats);
+		statisticData.put("statistic", statistics);
 		messagingTemplate.convertAndSend("/statistic", statisticData.toString() );
 	}
 	

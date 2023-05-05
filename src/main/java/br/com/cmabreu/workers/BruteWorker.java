@@ -42,6 +42,7 @@ public class BruteWorker implements Runnable {
 	}
 	
 	private synchronized BigDecimal balanceEth(Wallet cWallet, String netName, Web3j network, String address) {
+		this.quant++;
 		try {
 			EthGetBalance ethGetBalance = network.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
 			BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
@@ -123,7 +124,6 @@ public class BruteWorker implements Runnable {
 			if ( net.getBoolean("active") ) {
 				String netName = net.getString("name");
 				String netAddress = net.getString("apiAddress");
-				System.out.println("  > " + netName + " - " + netAddress );
 				this.networks.put( netName, Web3j.build(new HttpService( netAddress ) )  );
 				this.stats.put(netName, 0);
 			}
