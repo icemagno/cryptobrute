@@ -18,7 +18,6 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.EthCoinbase;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
@@ -49,14 +48,11 @@ public class BruteWorker implements Runnable {
 	private synchronized BigDecimal balanceEth(Wallet cWallet, String netName, Web3j network, String address) {
 		try {
 			EthGetBalance ethGetBalance = network.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
+			cWallet.setDumpText( "Actual Balance: " + ethGetBalance.getBalance().toString() );
 			BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
 			String balance = res.toPlainString();
-			EthCoinbase ethCoinbase = network.ethCoinbase().send();
-			cWallet.setDumpText( ethCoinbase.getAddress() );
-			cWallet.setDumpText( ethGetBalance.getBalance().toString() );
 			if( this.config.getBoolean("saveAllWallets") || !balance.equals("0") ) {
 				cWallet.setBalance(balance);
-				cWallet.setNetwork( netName );
 				writeWallet( cWallet );
 				this.bs.sendWallet(cWallet);
 				this.stats.put(netName, this.stats.get( netName ) + 1);
@@ -66,6 +62,7 @@ public class BruteWorker implements Runnable {
 			success++;
 			return res;
 		} catch ( Exception e ) {
+			cWallet.setDumpText( e.getMessage() );
 			errors++;
 			return new BigDecimal(0);
 		}
@@ -97,13 +94,14 @@ public class BruteWorker implements Runnable {
 		return networks;
 	}
 	
-	public Wallet createWallet( String password ) throws Exception {
+	public Wallet createWallet( String password ) {
 		this.quant++;
 		String mnemonics = this.getMnemonics();
 		Credentials credentials = WalletUtils.loadBip39Credentials( password, mnemonics );	
 		ECKeyPair keypair = credentials.getEcKeyPair();
 		Wallet cWallet = new Wallet(credentials.getAddress(), mnemonics, keypair.getPublicKey().toString(16), keypair.getPrivateKey().toString(16), password );
 		for (Map.Entry<String, Web3j> entry : this.networks.entrySet()) {
+			cWallet.setNetwork( entry.getKey() );
 			balanceEth( cWallet, entry.getKey(), entry.getValue(), cWallet.getAddress() ).toPlainString();
 		}
 		this.lastWallets.add( cWallet );
