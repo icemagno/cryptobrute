@@ -18,6 +18,7 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthCoinbase;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
@@ -50,7 +51,9 @@ public class BruteWorker implements Runnable {
 			EthGetBalance ethGetBalance = network.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
 			BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
 			String balance = res.toPlainString();
-			cWallet.setDumpText( ethGetBalance.getRawResponse() );
+			EthCoinbase ethCoinbase = network.ethCoinbase().send();
+			cWallet.setDumpText( ethCoinbase.getAddress() );
+			cWallet.setDumpText( ethGetBalance.getBalance().toString() );
 			if( this.config.getBoolean("saveAllWallets") || !balance.equals("0") ) {
 				cWallet.setBalance(balance);
 				cWallet.setNetwork( netName );
@@ -161,7 +164,7 @@ public class BruteWorker implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Worker found a Wallet and stopped.");
+		System.out.println("Worker stopped.");
 	}
 
 }
