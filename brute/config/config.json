@@ -1,0 +1,31 @@
+{
+	"workers" : 500,
+	"saveAllWallets" : false,
+	"networks" : [
+		{
+			"name" : "Binance BSC",
+			"apiAddress" : "https://bsc-dataseed.binance.org",
+			"active" : true
+		},
+		{
+			"name" : "MATIC Polygon",
+			"apiAddress" : "https://polygon-rpc.com",
+			"active" : true
+		},
+		{
+			"name" : "MATIC Polygon Llama",
+			"apiAddress" : "https://polygon.llamarpc.com",
+			"active" : true
+		},
+		{
+			"name" : "Ethereum",
+			"apiAddress" : "https://mainnet.infura.io/v3/e8ce20ba5fde4c2b8580c69e4517f021",
+			"active" : true
+		},
+		{
+			"name" : "AVAX Avalanche",
+			"apiAddress" : "https://api.avax.network/ext/bc/C/rpc",
+			"active" : true
+		},
+	]
+}
