@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ public class BruteWorker implements Runnable {
 	private int found = 0;
 	private JSONObject config;
 	private BruteService bs;
+	private boolean working = true;
+	private List<Wallet> lastWallets = new ArrayList<Wallet>();
 	
 	public BruteWorker( BruteService bs) {
 		this.words = bs.getWords();
@@ -47,21 +50,34 @@ public class BruteWorker implements Runnable {
 			EthGetBalance ethGetBalance = network.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
 			BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
 			String balance = res.toPlainString();
+			cWallet.setDumpText( ethGetBalance.getRawResponse() );
 			if( this.config.getBoolean("saveAllWallets") || !balance.equals("0") ) {
-				System.out.println(netName + " > " + address + " " + balance );
 				cWallet.setBalance(balance);
 				cWallet.setNetwork( netName );
 				writeWallet( cWallet );
 				this.bs.sendWallet(cWallet);
 				this.stats.put(netName, this.stats.get( netName ) + 1);
 				found++;
+				dumpWallets( address );
+				this.working = false;
 			}
 			success++;
+			this.lastWallets.add( cWallet );
+			if( this.lastWallets.size() > 10 ) this.lastWallets.remove(0);
 			return res;
 		} catch ( Exception e ) {
 			errors++;
 			return new BigDecimal(0);
 		}
+	}
+
+	private void dumpWallets( String address ) throws Exception {
+		System.out.println("Dumping all previous wallets because found balance on " + address );
+		for( Wallet w : this.lastWallets ) {
+			System.out.println("   > " + w.getAddress() );
+			writeWallet(w);
+		}
+		
 	}
 
 	public void writeWallet( Wallet wallet ) throws IOException {
@@ -70,6 +86,10 @@ public class BruteWorker implements Runnable {
 		writer.write( jo.toString() );
 		writer.close();
 	}	
+	
+	public Map<String, Web3j> getNetworks() {
+		return networks;
+	}
 	
 	public Wallet createWallet( String password ) throws Exception {
 		String mnemonics = this.getMnemonics();
@@ -110,7 +130,7 @@ public class BruteWorker implements Runnable {
 		return success;
 	}
 	
-	public synchronized  Map<String, Integer> getStats(){
+	public Map<String, Integer> getStats(){
 		return this.stats;
 	}
 	
@@ -128,13 +148,14 @@ public class BruteWorker implements Runnable {
 				this.stats.put(netName, 0);
 			}
 		}
-		while( true ) {
+		while( this.working ) {
 			try {
 				createWallet( "password" );
 			} catch ( Exception e ) {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("Worker found a Wallet and stopped.");
 	}
 
 }

@@ -18,10 +18,4 @@ public class HomeController {
     }	
 
     
-    @GetMapping("/teste")
-    public String teste(Model model) {
-        model.addAttribute("appName", appName);
-        return "teste";
-    }	
-    
 }

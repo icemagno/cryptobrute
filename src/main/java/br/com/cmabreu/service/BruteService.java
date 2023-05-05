@@ -1,6 +1,7 @@
 package br.com.cmabreu.service;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,6 +20,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.utils.Convert;
+import org.web3j.utils.Convert.Unit;
 
 import br.com.cmabreu.model.Wallet;
 import br.com.cmabreu.workers.BruteWorker;
@@ -122,6 +128,21 @@ public class BruteService {
 	public List<String> getWords() {
 		return words;
 	}
-	
 
+	public String reCheck(String addr) {
+		JSONObject result = new JSONObject();
+		result.put("address", addr);
+		for (Map.Entry<String, Web3j> entry : this.workers.get(0).getNetworks().entrySet()) {
+			try {
+				EthGetBalance ethGetBalance = entry.getValue().ethGetBalance(addr, DefaultBlockParameterName.LATEST).send();
+				BigDecimal res = Convert.fromWei( ethGetBalance.getBalance().toString() , Unit.ETHER );
+				String balance = res.toPlainString();
+				result.put( entry.getKey(), balance);
+			} catch ( Exception e ) {
+				//
+			}
+		}
+		return result.toString();
+	}
+	
 }

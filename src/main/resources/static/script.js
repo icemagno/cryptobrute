@@ -27,8 +27,8 @@ $( document ).ready(function() {
 });
 
 async function  verifyWallet( wallet, network ){
-	balance = await provider.getBalance("0xd0438D4539867cC3b58f0ce6824bEe58787c70Bd", "latest"); // 0.0045
-	// balance = await provider.getBalance( wallet );
+	//balance = await provider.getBalance("0xd0438D4539867cC3b58f0ce6824bEe58787c70Bd", "latest"); // 0.0045
+	balance = await provider.getBalance( wallet );
 	var bb = ethers.utils.formatEther(balance);
 	
     $(document).Toasts('create', {

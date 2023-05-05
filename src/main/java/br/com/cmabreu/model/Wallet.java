@@ -8,6 +8,7 @@ public class Wallet {
 	private String balance;
 	private String network;
 	private String password;
+	private String dumpText;
 	
 	public Wallet(String address, String mnemonic, String pubk, String privk, String password ) {
 		this.address = address;
@@ -17,6 +18,14 @@ public class Wallet {
 		this.network = "";
 		this.balance = "0";
 		this.password = password;
+	}
+	
+	public void setDumpText(String dumpText) {
+		this.dumpText = dumpText;
+	}
+	
+	public String getDumpText() {
+		return dumpText;
 	}
 	
 	public void setPassword(String password) {

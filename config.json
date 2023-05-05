@@ -1,5 +1,5 @@
 {
-	"workers" : 500,
+	"workers" : 2,
 	"saveAllWallets" : false,
 	"networks" : [
 		{
